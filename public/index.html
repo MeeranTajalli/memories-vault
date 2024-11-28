@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memories App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Memories App</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <label for="container">Choose a container:</label>
+        <select name="container" required>
+            <option value="public">Public Memories</option>
+            <option value="private">Private Memories</option>
+        </select>
+        <button type="submit">Upload Image</button>
+    </form>
+    <h2>View Images</h2>
+    <label for="viewContainer">Choose a container to view:</label>
+    <select id="viewContainer">
+        <option value="public">Public Memories</option>
+        <option value="private">Private Memories</option>
+    </select>
+    <button id="viewImagesBtn">View Images</button>
+    <div id="imageGallery"></div>
 
+    <script>
+        async function loadImages(container) {
+            const response = await fetch(`/images?container=${container}`);
+            const images = await response.json();
+
+            const gallery = document.getElementById("imageGallery");
+            gallery.innerHTML = "";
+
+            images.forEach(imageUrl => {
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                img.alt = "Uploaded Image";
+                gallery.appendChild(img);
+            });
+        }
+
+        document.getElementById("viewImagesBtn").addEventListener("click", function () {
+            const container = document.getElementById("viewContainer").value;
+            loadImages(container);
+        });
+
+        // Load public images by default on page load
+        loadImages("public");
+    </script>
+</body>
+</html>
