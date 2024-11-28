@@ -4,11 +4,11 @@
   "description": "A web app to upload and view images in Azure Blob Storage.",
   "main": "server.js",
   "engines": {
-    "node": "18.x"  // Ensuring compatibility with Node.js LTS 18
+    "node": "18.x"  
   },
   "scripts": {
     "start": "node server.js",
-    "build": "echo 'No build step required for Node.js backend'" // Optional, if you need a custom build step
+    "build": "echo 'No build step required for Node.js backend'" 
   },
   "dependencies": {
     "@azure/storage-blob": "^12.10.0",
