@@ -8,7 +8,6 @@ body {
     text-align: center;
 }
 
-/* Header */
 h1 {
     background-color: #4CAF50;
     color: white;
@@ -16,70 +15,6 @@ h1 {
     margin: 0;
     font-size: 2.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Form Styles */
-form {
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 500px;
-}
-
-form input, form select, form button {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1rem;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-form button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-form button:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
-}
-
-/* View Section */
-h2 {
-    margin-top: 40px;
-    font-size: 1.8rem;
-    color: #4CAF50;
-}
-
-#viewContainer, #viewImagesBtn {
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1rem;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-#viewImagesBtn {
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-#viewImagesBtn:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
 }
 
 /* Image Gallery */
@@ -92,90 +27,43 @@ h2 {
     padding: 0 20px;
 }
 
-#imageGallery img {
+.gallery-image {
     width: 100%;
     height: auto;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: zoom-in;
+    position: relative;
 }
 
-#imageGallery img:hover {
+/* Hover Zoom (CSS only) */
+.gallery-image:hover {
     transform: scale(1.05);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Footer */
-footer {
-    margin-top: 40px;
-    background: #4CAF50;
-    color: white;
-    padding: 10px;
-    font-size: 0.9rem;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    bottom: 0;
-    width: 100%;
-}
-/* General Styles (unchanged) */
-
-/* Lightbox Styles */
-.lightbox {
-    display: none; /* Hidden by default */
+/* Fullscreen Zoom on Click */
+.zoom-container {
     position: fixed;
-    z-index: 1000;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
     justify-content: center;
-    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
 }
 
-.lightbox-content {
+.zoom-container img {
     max-width: 80%;
     max-height: 80%;
-    border-radius: 10px;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease-in-out;
+    cursor: grab;
 }
 
-.close {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 30px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 1001;
-    transition: color 0.3s ease;
-}
-
-.close:hover {
-    color: #f44336;
-}
-
-.controls {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.controls button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    color: white;
-    background-color: #4CAF50;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.controls button:hover {
-    background-color: #45a049;
-    transform: scale(1.1);
+.zoom-container img:active {
+    cursor: grabbing;
 }
