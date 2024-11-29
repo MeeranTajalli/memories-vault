@@ -16,16 +16,19 @@
             <a href="index.html" class="nav-link">Home</a>
             <a href="private.html" class="nav-link">Confidential</a>
             <a href="about.html" class="nav-link">About Us</a>
+            <a href="#" id="signout" class="nav-link" style="display: none;">Sign Out</a>
         </nav>
     </header>
 
     <!-- Main Content -->
     <main>
-        <h2>Upload a Memory to Public Container</h2>
-        <form id="uploadForm">
-            <input type="file" id="fileInput" required>
-            <button type="submit">Upload</button>
-        </form>
+        <div id="uploadSection" style="display: none;">
+            <h2>Upload a Memory to Public Container</h2>
+            <form id="uploadForm">
+                <input type="file" id="fileInput" required>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
 
         <h2>Public Memories</h2>
         <div id="publicImageGallery"></div>
@@ -38,6 +41,21 @@
     <script>
         const containerUrl = "https://cloudtask5.blob.core.windows.net/public-memories";
         const sasToken = "sp=rwl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D";
+
+        // Check if user is authenticated
+        const authenticated = sessionStorage.getItem("authenticated");
+
+        if (authenticated) {
+            document.getElementById("uploadSection").style.display = "block"; // Show upload section
+            document.getElementById("signout").style.display = "inline"; // Show Sign Out
+        }
+
+        // Sign-out functionality
+        document.getElementById("signout").addEventListener("click", function () {
+            sessionStorage.removeItem("authenticated");
+            alert("You have been signed out.");
+            window.location.reload();
+        });
 
         // Fetch and display public photos
         function fetchPublicPhotos() {
@@ -70,6 +88,11 @@
         // Handle file upload
         document.getElementById("uploadForm").addEventListener("submit", function (e) {
             e.preventDefault();
+
+            if (!authenticated) {
+                alert("You need to sign in to upload files.");
+                return;
+            }
 
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
