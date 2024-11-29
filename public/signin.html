@@ -13,38 +13,35 @@
         <h1>Sign In</h1>
     </header>
     <main>
-        <p class="info-text">Private content is only accessible to registered users. Please sign in to continue.</p>
         <form id="signinForm">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            <input type="text" id="username" name="username" required>
             <br>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <input type="password" id="password" name="password" required>
             <br>
             <button type="submit">Sign In</button>
         </form>
-        <p class="register-text">Don't have an account? <a href="#">Register here</a>.</p>
     </main>
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
     <script>
-        document.getElementById("signinForm").addEventListener("submit", function (e) {
-            e.preventDefault();
+        const form = document.getElementById("signinForm");
 
-            // Replace this with your actual authentication logic
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            // Simulate sign-in validation
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
 
-            if (username === "user" && password === "password") {
-                // Save authentication in sessionStorage
+            if (username === "testuser" && password === "password123") { // Replace with real validation
                 sessionStorage.setItem("authenticated", true);
-                alert("You are successfully signed in!");
-                // Redirect to the private page
+                alert("Sign-in successful!");
                 window.location.href = "private.html";
             } else {
-                alert("Invalid credentials! Please try again.");
+                alert("Invalid credentials, please try again.");
             }
         });
     </script>
