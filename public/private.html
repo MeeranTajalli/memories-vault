@@ -7,20 +7,76 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Header with Navigation -->
     <header>
         <h1>Private Memories</h1>
+        <p class="slogan">Your personal treasure trove of memories.</p>
         <nav>
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="about.html" class="nav-link">About Us</a>
+            <a href="index.html" class="nav-link">Public Memories</a>
+            <a href="private.html" class="nav-link">Private Memories</a>
         </nav>
     </header>
+
+    <!-- View Private Memories -->
     <main>
-        <h2>Your Private Memories</h2>
-        <p>View all the memories you've kept private and secure.</p>
-        <div id="privateImageGallery"></div>
+        <section id="login-section">
+            <button id="loginBtn">Log In</button>
+        </section>
+
+        <section id="view-section" style="display: none;">
+            <h2>Your Private Memories</h2>
+            <div id="privateImageGallery"></div>
+        </section>
     </main>
+
+    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
+
+    <script>
+        const loginButton = document.getElementById("loginBtn");
+        const viewSection = document.getElementById("view-section");
+        const loginSection = document.getElementById("login-section");
+
+        async function login() {
+            // Simulate login using Azure AD B2C or another method
+            const token = await mockLogin(); // Replace this with real Azure AD B2C login
+            if (token) {
+                loginSection.style.display = "none";
+                viewSection.style.display = "block";
+                loadPrivateMemories(token);
+            }
+        }
+
+        async function loadPrivateMemories(token) {
+            // Fetch images from the private container
+            const response = await fetch(`/private/images`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const images = await response.json();
+
+            const gallery = document.getElementById("privateImageGallery");
+            gallery.innerHTML = "";
+
+            // Display images in the gallery
+            images.forEach(imageUrl => {
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                img.alt = "Private Memory";
+                img.classList.add("gallery-image");
+                gallery.appendChild(img);
+            });
+        }
+
+        async function mockLogin() {
+            // Simulate an authentication process
+            return new Promise((resolve) => {
+                setTimeout(() => resolve("mock-auth-token"), 1000); // Replace with Azure AD B2C token
+            });
+        }
+
+        loginButton.addEventListener("click", login);
+    </script>
 </body>
 </html>
