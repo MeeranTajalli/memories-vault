@@ -11,14 +11,12 @@
 <body>
     <header>
         <h1>Private Memories</h1>
-       
         <nav>
             <a href="index.html" class="nav-link">Home</a>
             <a href="private.html" class="nav-link">Confidential</a>
             <a href="about.html" class="nav-link">About Us</a>
             <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
-            
     </header>
     <main>
         <h2>Your Private Memories</h2>
@@ -34,6 +32,7 @@
         const authenticated = sessionStorage.getItem("authenticated");
 
         if (!authenticated) {
+            // Redirect to the signin.html page
             alert("You need to sign in to access this page.");
             window.location.href = "signin.html";
         } else {
@@ -51,13 +50,13 @@
         // Function to fetch private photos from Azure Blob Storage
         function fetchPrivatePhotos() {
             // Azure Blob Storage details
-            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Container URL provided
-            const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token provided
+            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Container URL
+            const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token
 
-            fetch(${containerUrl}?restype=container&comp=list&${sasToken})
+            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(HTTP error! Status: ${response.status});
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     return response.text();
                 })
@@ -75,7 +74,7 @@
 
                     for (let i = 0; i < blobs.length; i++) {
                         const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
-                        const blobUrl = ${containerUrl}/${blobName}?${sasToken};
+                        const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
 
                         const img = document.createElement("img");
                         img.src = blobUrl;
