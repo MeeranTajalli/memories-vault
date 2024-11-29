@@ -1,96 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Memories</title>
+    <title>Public Memories</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+    <!-- Header with Navigation -->
     <header>
-        <h1>Private Memories</h1>
+        <h1>Public Memories</h1>
+        <p class="slogan">Explore memories shared by everyone!</p>
         <nav>
-            <a href="index.html" class="nav-link">Home</a>
-            <a href="private.html" class="nav-link">Confidential</a>
+            <a href="index.html" class="nav-link">Public Memories</a>
+            <a href="private.html" class="nav-link">Private Memories</a>
             <a href="about.html" class="nav-link">About Us</a>
-            <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
     </header>
+
+    <!-- View Public Memories -->
     <main>
-        <h2>Your Private Memories</h2>
-        <p>View all the memories you've kept private and secure.</p>
-        <div id="privateImageGallery"></div>
+        <section id="view-section">
+            <h2>Public Memories</h2>
+            <div id="imageGallery"></div>
+        </section>
     </main>
+
+    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
     <script>
-        // Check if the user is authenticated
-        const authenticated = sessionStorage.getItem("authenticated");
+        async function loadPublicMemories() {
+            // Fetch images from the public container
+            const response = await fetch(`/images?container=public`);
+            const images = await response.json();
 
-        if (!authenticated) {
-            // Redirect to the signin.html page
-            alert("You need to sign in to access this page.");
-            window.location.href = "signin.html";
-        } else {
-            // Fetch private photos if authenticated
-            fetchPrivatePhotos();
+            const gallery = document.getElementById("imageGallery");
+            gallery.innerHTML = "";
+
+            // Display images in the gallery
+            images.forEach(imageUrl => {
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                img.alt = "Public Memory";
+                img.classList.add("gallery-image");
+                gallery.appendChild(img);
+            });
         }
 
-        // Sign-out functionality
-        document.getElementById("signout").addEventListener("click", function () {
-            sessionStorage.removeItem("authenticated");
-            alert("You have been signed out.");
-            window.location.href = "signin.html";
-        });
-
-        // Function to fetch private photos from Azure Blob Storage
-        function fetchPrivatePhotos() {
-            // Azure Blob Storage details
-            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Container URL
-            const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token
-
-            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    // Parse XML response and display photos
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(data, "text/xml");
-                    const blobs = xmlDoc.getElementsByTagName("Blob");
-                    const gallery = document.getElementById("privateImageGallery");
-
-                    if (blobs.length === 0) {
-                        gallery.innerHTML = "<p>No private memories available.</p>";
-                        return;
-                    }
-
-                    for (let i = 0; i < blobs.length; i++) {
-                        const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
-                        const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
-
-                        const img = document.createElement("img");
-                        img.src = blobUrl;
-                        img.alt = blobName;
-                        img.style.maxWidth = "200px";
-                        img.style.margin = "10px";
-
-                        gallery.appendChild(img);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching photos:", error);
-                    document.getElementById("privateImageGallery").innerHTML = "<p>Error loading private memories.</p>";
-                });
-        }
+        // Load public memories on page load
+        loadPublicMemories();
     </script>
 </body>
-
 </html>
