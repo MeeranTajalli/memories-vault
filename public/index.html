@@ -13,16 +13,43 @@
         <p class="slogan">A place where you treasure your valuable pictures and relive your memories.</p>
         <nav>
             <a href="index.html" class="nav-link">Home</a>
-            <a href="private.html" class="nav-link" id="privateLink">Private Memories</a>
+            <a href="private.html" class="nav-link">Private Memories</a>
             <a href="about.html" class="nav-link">About Us</a>
             <a href="#" id="signout" class="nav-link" style="display: none;">Sign Out</a>
         </nav>
     </header>
 
-    <!-- Main Content -->
+    <!-- Sign-In Section -->
+    <section id="signin-section">
+        <h2>Sign In</h2>
+        <form id="signinForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Sign In</button>
+        </form>
+        <p id="signinMessage"></p>
+    </section>
+
+    <!-- Upload Section (Hidden by Default) -->
+    <section id="upload-section" style="display: none;">
+        <h2>Upload Your Memories</h2>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" required>
+            <label for="container">Choose a container:</label>
+            <select name="container" required>
+                <option value="public">Public Memories</option>
+                <option value="private">Private Memories</option>
+            </select>
+            <button type="submit">Upload Image</button>
+        </form>
+    </section>
+
+    <!-- View Section -->
     <main>
-        <section id="public-section">
-            <h2>Public Memories</h2>
+        <section id="view-section">
+            <h2>View Memories</h2>
             <div id="imageGallery"></div>
         </section>
     </main>
@@ -33,22 +60,41 @@
     </footer>
 
     <script>
-        // Check authentication for private page navigation
         const authenticated = sessionStorage.getItem("authenticated");
 
-        document.getElementById("privateLink").addEventListener("click", function (e) {
-            if (!authenticated) {
-                e.preventDefault(); // Prevent navigation
-                const signIn = confirm("You need to sign in to view private memories. Would you like to sign in?");
-                if (signIn) {
-                    window.location.href = "signin.html";
-                } else {
-                    alert("Redirecting to the home page.");
-                }
+        // Handle Sign-In Form
+        document.getElementById("signinForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Example authentication logic (replace with actual backend API call)
+            if (username === "user" && password === "password") {
+                sessionStorage.setItem("authenticated", "true");
+                document.getElementById("signinMessage").textContent = "You are signed in.";
+                document.getElementById("signin-section").style.display = "none";
+                document.getElementById("upload-section").style.display = "block";
+                document.getElementById("signout").style.display = "block";
+            } else {
+                document.getElementById("signinMessage").textContent = "Invalid username or password.";
             }
         });
 
-        // Load public images by default
+        // Handle Sign-Out
+        document.getElementById("signout").addEventListener("click", function () {
+            sessionStorage.removeItem("authenticated");
+            alert("You have been signed out.");
+            window.location.href = "index.html";
+        });
+
+        // Show Upload Section if Already Authenticated
+        if (authenticated) {
+            document.getElementById("signin-section").style.display = "none";
+            document.getElementById("upload-section").style.display = "block";
+            document.getElementById("signout").style.display = "block";
+        }
+
+        // Load Public Images
         loadImages("public");
 
         async function loadImages(container) {
@@ -64,17 +110,6 @@
                 gallery.appendChild(img);
             });
         }
-
-        // Sign-out functionality
-        if (authenticated) {
-            document.getElementById("signout").style.display = "block";
-        }
-
-        document.getElementById("signout").addEventListener("click", function () {
-            sessionStorage.removeItem("authenticated");
-            alert("You have been signed out.");
-            window.location.href = "index.html";
-        });
     </script>
 </body>
 </html>
