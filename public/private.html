@@ -22,32 +22,28 @@
 
     <!-- Main Content -->
     <main>
-        <div id="uploadSection">
-            <h2>Upload a Memory to Private Container</h2>
-            <form id="uploadForm">
-                <input type="file" id="fileInput" required>
-                <button type="submit">Upload</button>
-            </form>
-        </div>
-
         <h2>Your Private Memories</h2>
+        <p>View all the memories you've kept private and secure.</p>
         <div id="privateImageGallery"></div>
     </main>
 
+    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
+    <!-- Script Section -->
     <script>
-        const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories";
-        const sasToken = "sp=rwl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D";
-
         // Check if the user is authenticated
         const authenticated = sessionStorage.getItem("authenticated");
 
         if (!authenticated) {
+            // Redirect to the signin.html page
             alert("You need to sign in to access this page.");
             window.location.href = "signin.html";
+        } else {
+            // Fetch private photos if authenticated
+            fetchPrivatePhotos();
         }
 
         // Sign-out functionality
@@ -57,18 +53,36 @@
             window.location.href = "signin.html";
         });
 
-        // Fetch and display private photos
+        // Function to fetch private photos from Azure Blob Storage
         function fetchPrivatePhotos() {
-            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
-                .then(response => response.text())
+            // Azure Blob Storage details
+            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Private container URL
+            const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token
+
+            // Construct the full URL with SAS token
+            const requestUrl = `${containerUrl}?restype=container&comp=list&${sasToken}`;
+
+            fetch(requestUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text(); // Return XML response as text
+                })
                 .then(data => {
+                    // Parse XML response
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(data, "text/xml");
                     const blobs = xmlDoc.getElementsByTagName("Blob");
                     const gallery = document.getElementById("privateImageGallery");
 
-                    gallery.innerHTML = ""; // Clear the gallery
+                    // Check if there are no blobs
+                    if (blobs.length === 0) {
+                        gallery.innerHTML = "<p>No private memories available.</p>";
+                        return;
+                    }
 
+                    // Display each blob (image) in the gallery
                     for (let i = 0; i < blobs.length; i++) {
                         const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
                         const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
@@ -82,42 +96,11 @@
                         gallery.appendChild(img);
                     }
                 })
-                .catch(error => console.error("Error fetching private photos:", error));
+                .catch(error => {
+                    console.error("Error fetching photos:", error);
+                    document.getElementById("privateImageGallery").innerHTML = "<p>Error loading private memories.</p>";
+                });
         }
-
-        // Handle file upload
-        document.getElementById("uploadForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            if (!authenticated) {
-                alert("You need to sign in to upload files.");
-                return;
-            }
-
-            const fileInput = document.getElementById("fileInput");
-            const file = fileInput.files[0];
-            if (!file) return alert("Please select a file to upload.");
-
-            const blobUrl = `${containerUrl}/${file.name}?${sasToken}`;
-            fetch(blobUrl, {
-                method: "PUT",
-                headers: { "x-ms-blob-type": "BlockBlob" },
-                body: file,
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert("File uploaded successfully.");
-                        fetchPrivatePhotos(); // Refresh the gallery
-                    } else {
-                        alert("Error uploading file.");
-                        console.error("Upload failed:", response);
-                    }
-                })
-                .catch(error => console.error("Error uploading file:", error));
-        });
-
-        // Load private photos on page load
-        fetchPrivatePhotos();
     </script>
 </body>
 
