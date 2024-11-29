@@ -9,6 +9,7 @@
 </head>
 
 <body>
+    <!-- Header Section -->
     <header>
         <h1>Private Memories</h1>
         <nav>
@@ -18,15 +19,20 @@
             <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
     </header>
+
+    <!-- Main Content -->
     <main>
         <h2>Your Private Memories</h2>
         <p>View all the memories you've kept private and secure.</p>
         <div id="privateImageGallery"></div>
     </main>
+
+    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
+    <!-- Script Section -->
     <script>
         // Check if the user is authenticated
         const authenticated = sessionStorage.getItem("authenticated");
@@ -50,28 +56,33 @@
         // Function to fetch private photos from Azure Blob Storage
         function fetchPrivatePhotos() {
             // Azure Blob Storage details
-            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Container URL
+            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Private container URL
             const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token
 
-            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
+            // Construct the full URL with SAS token
+            const requestUrl = `${containerUrl}?restype=container&comp=list&${sasToken}`;
+
+            fetch(requestUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                    return response.text();
+                    return response.text(); // Return XML response as text
                 })
                 .then(data => {
-                    // Parse XML response and display photos
+                    // Parse XML response
                     const parser = new DOMParser();
                     const xmlDoc = parser.parseFromString(data, "text/xml");
                     const blobs = xmlDoc.getElementsByTagName("Blob");
                     const gallery = document.getElementById("privateImageGallery");
 
+                    // Check if there are no blobs
                     if (blobs.length === 0) {
                         gallery.innerHTML = "<p>No private memories available.</p>";
                         return;
                     }
 
+                    // Display each blob (image) in the gallery
                     for (let i = 0; i < blobs.length; i++) {
                         const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
                         const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
