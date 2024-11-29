@@ -7,30 +7,56 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Memory Vault</h1>
+    <!-- Header with Navigation -->
+    <header>
+        <h1>Memory Vault</h1>
+        <p class="slogan">A place where you treasure your valuable pictures and relive your memories.</p>
+        <nav>
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="private.html" class="nav-link">Private Memories</a>
+            <a href="about.html" class="nav-link">About Us</a>
+        </nav>
+    </header>
 
     <!-- Upload Section -->
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <h2>Upload Your Memories</h2>
-        <input type="file" name="image" required>
-        <label for="container">Choose a container:</label>
-        <select name="container" required>
-            <option value="public">Public Memories</option>
-            <option value="private">Private Memories</option>
-        </select>
-        <button type="submit">Upload Image</button>
-    </form>
+    <main>
+        <section id="upload-section">
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <h2>Upload Your Memories</h2>
+                <input type="file" name="image" required>
+                <label for="container">Choose a container:</label>
+                <select name="container" required>
+                    <option value="public">Public Memories</option>
+                    <option value="private">Private Memories</option>
+                </select>
+                <button type="submit">Upload Image</button>
+            </form>
+        </section>
 
-    <!-- View Section -->
-    <h2>View Memories</h2>
-    <label for="viewContainer">Choose a container to view:</label>
-    <select id="viewContainer">
-        <option value="public">Public Memories</option>
-        <option value="private">Private Memories</option>
-    </select>
-    <button id="viewImagesBtn">View Images</button>
-    <div id="imageGallery"></div>
+        <!-- View Section -->
+        <section id="view-section">
+            <h2>View Memories</h2>
+            <label for="viewContainer">Choose a container to view:</label>
+            <select id="viewContainer">
+                <option value="public">Public Memories</option>
+                <option value="private">Private Memories</option>
+            </select>
+            <button id="viewImagesBtn">View Images</button>
+            <div id="imageGallery"></div>
+        </section>
+    </main>
 
+    <!-- Lightbox Zoom Container -->
+    <div id="lightbox" class="zoom-container">
+        <img id="zoomedImage" src="" alt="Zoomed Image">
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 Memory Vault - All Rights Reserved</p>
+    </footer>
+
+    <!-- Load Images Script -->
     <script>
         async function loadImages(container) {
             const response = await fetch(`/images?container=${container}`);
@@ -56,103 +82,103 @@
         // Load public images by default on page load
         loadImages("public");
     </script>
+
+    <!-- Zoom and Drag Script -->
     <script>
-    let zoomContainer;
-    let isZooming = false; // Tracks whether the user is zooming
-    let currentZoom = 1; // Tracks the current zoom level
-    let offsetX = 0; // Tracks the horizontal offset for dragging
-    let offsetY = 0; // Tracks the vertical offset for dragging
-    let startX, startY; // Tracks starting position for dragging
+        let zoomContainer;
+        let isZooming = false; // Tracks whether the user is zooming
+        let currentZoom = 1; // Tracks the current zoom level
+        let offsetX = 0; // Tracks the horizontal offset for dragging
+        let offsetY = 0; // Tracks the vertical offset for dragging
+        let startX, startY; // Tracks starting position for dragging
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // Create and append the zoom container
-        zoomContainer = document.createElement("div");
-        zoomContainer.className = "zoom-container";
-        zoomContainer.innerHTML = `<img id="zoomedImage" src="">`;
-        document.body.appendChild(zoomContainer);
+        document.addEventListener("DOMContentLoaded", () => {
+            // Create and append the zoom container
+            zoomContainer = document.createElement("div");
+            zoomContainer.className = "zoom-container";
+            zoomContainer.innerHTML = `<img id="zoomedImage" src="">`;
+            document.body.appendChild(zoomContainer);
 
-        const gallery = document.getElementById("imageGallery");
+            const gallery = document.getElementById("imageGallery");
 
-        // Add click event to gallery images to open in fullscreen
-        gallery.addEventListener("click", (e) => {
-            if (e.target && e.target.classList.contains("gallery-image")) {
-                openZoom(e.target.src);
-            }
+            // Add click event to gallery images to open in fullscreen
+            gallery.addEventListener("click", (e) => {
+                if (e.target && e.target.classList.contains("gallery-image")) {
+                    openZoom(e.target.src);
+                }
+            });
+
+            // Add event listeners for closing zoom and zoom functionality
+            zoomContainer.addEventListener("click", closeZoom);
+            zoomContainer.addEventListener("wheel", zoomImage);
+            zoomContainer.addEventListener("mousedown", startDragging);
+            zoomContainer.addEventListener("mousemove", dragImage);
+            zoomContainer.addEventListener("mouseup", stopDragging);
+            zoomContainer.addEventListener("mouseleave", stopDragging);
         });
 
-        // Add event listeners for closing zoom and zoom functionality
-        zoomContainer.addEventListener("click", closeZoom);
-        zoomContainer.addEventListener("wheel", zoomImage);
-        zoomContainer.addEventListener("mousedown", startDragging);
-        zoomContainer.addEventListener("mousemove", dragImage);
-        zoomContainer.addEventListener("mouseup", stopDragging);
-        zoomContainer.addEventListener("mouseleave", stopDragging);
-    });
-
-    // Open the zoom container with the selected image
-    function openZoom(imageSrc) {
-        const zoomedImage = document.getElementById("zoomedImage");
-        zoomedImage.src = imageSrc;
-        zoomedImage.style.transform = `scale(1) translate(0px, 0px)`; // Reset zoom and position
-        currentZoom = 1;
-        offsetX = 0;
-        offsetY = 0;
-        zoomContainer.style.display = "flex";
-    }
-
-    // Close the zoom container
-    function closeZoom(e) {
-        if (e.target.id !== "zoomedImage") { // Only close if clicked outside the image
-            zoomContainer.style.display = "none";
+        // Open the zoom container with the selected image
+        function openZoom(imageSrc) {
+            const zoomedImage = document.getElementById("zoomedImage");
+            zoomedImage.src = imageSrc;
+            zoomedImage.style.transform = `scale(1) translate(0px, 0px)`; // Reset zoom and position
+            currentZoom = 1;
+            offsetX = 0;
+            offsetY = 0;
+            zoomContainer.style.display = "flex";
         }
-    }
 
-    // Zoom in/out using the mouse wheel
-    function zoomImage(e) {
-        e.preventDefault();
-        const zoomedImage = document.getElementById("zoomedImage");
+        // Close the zoom container
+        function closeZoom(e) {
+            if (e.target.id !== "zoomedImage") { // Only close if clicked outside the image
+                zoomContainer.style.display = "none";
+            }
+        }
 
-        // Calculate new zoom level
-        const zoomStep = e.deltaY < 0 ? 0.1 : -0.1; // Zoom in or out
-        currentZoom = Math.max(1, Math.min(3, currentZoom + zoomStep)); // Clamp zoom level between 1x and 3x
+        // Zoom in/out using the mouse wheel
+        function zoomImage(e) {
+            e.preventDefault();
+            const zoomedImage = document.getElementById("zoomedImage");
 
-        // Update the image transform
-        zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
-    }
+            // Calculate new zoom level
+            const zoomStep = e.deltaY < 0 ? 0.1 : -0.1; // Zoom in or out
+            currentZoom = Math.max(1, Math.min(3, currentZoom + zoomStep)); // Clamp zoom level between 1x and 3x
 
-    // Start dragging the image
-    function startDragging(e) {
-        isZooming = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        zoomContainer.style.cursor = "grabbing"; // Change cursor to grabbing
-    }
+            // Update the image transform
+            zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
+        }
 
-    // Drag the image
-    function dragImage(e) {
-        if (!isZooming || currentZoom <= 1) return; // Only allow dragging if zoomed in
+        // Start dragging the image
+        function startDragging(e) {
+            isZooming = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            zoomContainer.style.cursor = "grabbing"; // Change cursor to grabbing
+        }
 
-        const zoomedImage = document.getElementById("zoomedImage");
-        const dx = e.clientX - startX; // Calculate horizontal drag distance
-        const dy = e.clientY - startY; // Calculate vertical drag distance
-        offsetX += dx / currentZoom; // Adjust offsets based on zoom level
-        offsetY += dy / currentZoom;
+        // Drag the image
+        function dragImage(e) {
+            if (!isZooming || currentZoom <= 1) return; // Only allow dragging if zoomed in
 
-        // Update the image transform with new offsets
-        zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
+            const zoomedImage = document.getElementById("zoomedImage");
+            const dx = e.clientX - startX; // Calculate horizontal drag distance
+            const dy = e.clientY - startY; // Calculate vertical drag distance
+            offsetX += dx / currentZoom; // Adjust offsets based on zoom level
+            offsetY += dy / currentZoom;
 
-        // Update starting position
-        startX = e.clientX;
-        startY = e.clientY;
-    }
+            // Update the image transform with new offsets
+            zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
 
-    // Stop dragging the image
-    function stopDragging() {
-        isZooming = false;
-        zoomContainer.style.cursor = "grab"; // Change cursor back to grab
-    }
-</script>
+            // Update starting position
+            startX = e.clientX;
+            startY = e.clientY;
+        }
 
-
+        // Stop dragging the image
+        function stopDragging() {
+            isZooming = false;
+            zoomContainer.style.cursor = "grab"; // Change cursor back to grab
+        }
+    </script>
 </body>
 </html>
