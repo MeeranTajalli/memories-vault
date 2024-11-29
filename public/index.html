@@ -1,57 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Vault</title>
+    <title>Public Memories</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <!-- Header with Navigation -->
+    <!-- Header Section -->
     <header>
-        <h1>Memory Vault</h1>
-        <p class="slogan">Explore memories shared by everyone!</p>
+        <h1>Public Memories</h1>
         <nav>
             <a href="index.html" class="nav-link">Home</a>
-            <a href="private.html" class="nav-link">Confidential</a
-            <a href="about.html" class="nav-link">About</a>
+            <a href="private.html" class="nav-link">Confidential</a>
+            <a href="about.html" class="nav-link">About Us</a>
         </nav>
     </header>
 
-    <!-- View Public Memories -->
+    <!-- Main Content -->
     <main>
-        <section id="view-section">
-            <h2>Public Memories</h2>
-            <div id="imageGallery"></div>
-        </section>
+        <h2>Upload a Memory to Public Container</h2>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" required>
+            <button type="submit">Upload</button>
+        </form>
+
+        <h2>Public Memories</h2>
+        <div id="publicImageGallery"></div>
     </main>
 
-    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
     <script>
-        async function loadPublicMemories() {
-            // Fetch images from the public container
-            const response = await fetch(`/images?container=public`);
-            const images = await response.json();
+        const containerUrl = "https://cloudtask5.blob.core.windows.net/public-memories";
+        const sasToken = "sp=rwl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D";
 
-            const gallery = document.getElementById("imageGallery");
-            gallery.innerHTML = "";
+        // Fetch and display public photos
+        function fetchPublicPhotos() {
+            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "text/xml");
+                    const blobs = xmlDoc.getElementsByTagName("Blob");
+                    const gallery = document.getElementById("publicImageGallery");
 
-            // Display images in the gallery
-            images.forEach(imageUrl => {
-                const img = document.createElement("img");
-                img.src = imageUrl;
-                img.alt = "Public Memory";
-                img.classList.add("gallery-image");
-                gallery.appendChild(img);
-            });
+                    gallery.innerHTML = ""; // Clear the gallery
+
+                    for (let i = 0; i < blobs.length; i++) {
+                        const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
+                        const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
+
+                        const img = document.createElement("img");
+                        img.src = blobUrl;
+                        img.alt = blobName;
+                        img.style.maxWidth = "200px";
+                        img.style.margin = "10px";
+
+                        gallery.appendChild(img);
+                    }
+                })
+                .catch(error => console.error("Error fetching public photos:", error));
         }
 
-        // Load public memories on page load
-        loadPublicMemories();
+        // Handle file upload
+        document.getElementById("uploadForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) return alert("Please select a file to upload.");
+
+            const blobUrl = `${containerUrl}/${file.name}?${sasToken}`;
+            fetch(blobUrl, {
+                method: "PUT",
+                headers: { "x-ms-blob-type": "BlockBlob" },
+                body: file,
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert("File uploaded successfully.");
+                        fetchPublicPhotos(); // Refresh the gallery
+                    } else {
+                        alert("Error uploading file.");
+                        console.error("Upload failed:", response);
+                    }
+                })
+                .catch(error => console.error("Error uploading file:", error));
+        });
+
+        // Load public photos on page load
+        fetchPublicPhotos();
     </script>
 </body>
+
 </html>
