@@ -1,82 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Memories</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <!-- Header with Navigation -->
     <header>
         <h1>Private Memories</h1>
-        <p class="slogan">Your personal treasure trove of memories.</p>
         <nav>
-            <a href="index.html" class="nav-link">Public Memories</a>
-            <a href="private.html" class="nav-link">Private Memories</a>
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="about.html" class="nav-link">About Us</a>
+            <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
     </header>
-
-    <!-- View Private Memories -->
     <main>
-        <section id="login-section">
-            <button id="loginBtn">Log In</button>
-        </section>
-
-        <section id="view-section" style="display: none;">
-            <h2>Your Private Memories</h2>
-            <div id="privateImageGallery"></div>
-        </section>
+        <h2>Your Private Memories</h2>
+        <p>View all the memories you've kept private and secure.</p>
+        <div id="privateImageGallery"></div>
     </main>
-
-    <!-- Footer -->
     <footer>
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
     <script>
-        const loginButton = document.getElementById("loginBtn");
-        const viewSection = document.getElementById("view-section");
-        const loginSection = document.getElementById("login-section");
+        // Check if the user is authenticated
+        const authenticated = sessionStorage.getItem("authenticated");
 
-        async function login() {
-            // Simulate login using Azure AD B2C or another method
-            const token = await mockLogin(); // Replace this with real Azure AD B2C login
-            if (token) {
-                loginSection.style.display = "none";
-                viewSection.style.display = "block";
-                loadPrivateMemories(token);
-            }
+        if (!authenticated) {
+            alert("You need to sign in to access this page.");
+            window.location.href = "signin.html";
+        } else {
+            // Fetch private photos if authenticated
+            fetchPrivatePhotos();
         }
 
-        async function loadPrivateMemories(token) {
-            // Fetch images from the private container
-            const response = await fetch(`/private/images`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const images = await response.json();
+        // Sign-out functionality
+        document.getElementById("signout").addEventListener("click", function () {
+            sessionStorage.removeItem("authenticated");
+            alert("You have been signed out.");
+            window.location.href = "signin.html";
+        });
 
-            const gallery = document.getElementById("privateImageGallery");
-            gallery.innerHTML = "";
+        // Function to fetch private photos from Azure Blob Storage
+        function fetchPrivatePhotos() {
+            // Replace with your Azure Blob Storage details
+            const containerUrl = "https://<your-storage-account>.blob.core.windows.net/<your-container-name>";
+            const sasToken = "<your-SAS-token>"; // Add your SAS token here
 
-            // Display images in the gallery
-            images.forEach(imageUrl => {
-                const img = document.createElement("img");
-                img.src = imageUrl;
-                img.alt = "Private Memory";
-                img.classList.add("gallery-image");
-                gallery.appendChild(img);
-            });
+            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Parse XML response and display photos
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(data, "text/xml");
+                    const blobs = xmlDoc.getElementsByTagName("Blob");
+                    const gallery = document.getElementById("privateImageGallery");
+
+                    if (blobs.length === 0) {
+                        gallery.innerHTML = "<p>No private memories available.</p>";
+                        return;
+                    }
+
+                    for (let i = 0; i < blobs.length; i++) {
+                        const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
+                        const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
+
+                        const img = document.createElement("img");
+                        img.src = blobUrl;
+                        img.alt = blobName;
+                        img.style.maxWidth = "200px";
+                        img.style.margin = "10px";
+
+                        gallery.appendChild(img);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching photos:", error);
+                    document.getElementById("privateImageGallery").innerHTML = "<p>Error loading private memories.</p>";
+                });
         }
-
-        async function mockLogin() {
-            // Simulate an authentication process
-            return new Promise((resolve) => {
-                setTimeout(() => resolve("mock-auth-token"), 1000); // Replace with Azure AD B2C token
-            });
-        }
-
-        loginButton.addEventListener("click", login);
     </script>
 </body>
+
 </html>
