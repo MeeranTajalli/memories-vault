@@ -58,9 +58,14 @@
     </script>
     <script>
     let zoomContainer;
+    let isZooming = false; // Tracks whether the user is zooming
+    let currentZoom = 1; // Tracks the current zoom level
+    let offsetX = 0; // Tracks the horizontal offset for dragging
+    let offsetY = 0; // Tracks the vertical offset for dragging
+    let startX, startY; // Tracks starting position for dragging
 
-    // Add event listener to images for zoom functionality
     document.addEventListener("DOMContentLoaded", () => {
+        // Create and append the zoom container
         zoomContainer = document.createElement("div");
         zoomContainer.className = "zoom-container";
         zoomContainer.innerHTML = `<img id="zoomedImage" src="">`;
@@ -68,38 +73,86 @@
 
         const gallery = document.getElementById("imageGallery");
 
+        // Add click event to gallery images to open in fullscreen
         gallery.addEventListener("click", (e) => {
             if (e.target && e.target.classList.contains("gallery-image")) {
                 openZoom(e.target.src);
             }
         });
 
+        // Add event listeners for closing zoom and zoom functionality
         zoomContainer.addEventListener("click", closeZoom);
+        zoomContainer.addEventListener("wheel", zoomImage);
+        zoomContainer.addEventListener("mousedown", startDragging);
+        zoomContainer.addEventListener("mousemove", dragImage);
+        zoomContainer.addEventListener("mouseup", stopDragging);
+        zoomContainer.addEventListener("mouseleave", stopDragging);
     });
 
-    // Open zoom container
+    // Open the zoom container with the selected image
     function openZoom(imageSrc) {
         const zoomedImage = document.getElementById("zoomedImage");
         zoomedImage.src = imageSrc;
-        zoomedImage.style.transform = "scale(1)";
+        zoomedImage.style.transform = `scale(1) translate(0px, 0px)`; // Reset zoom and position
+        currentZoom = 1;
+        offsetX = 0;
+        offsetY = 0;
         zoomContainer.style.display = "flex";
     }
 
-    // Close zoom container
-    function closeZoom() {
-        zoomContainer.style.display = "none";
+    // Close the zoom container
+    function closeZoom(e) {
+        if (e.target.id !== "zoomedImage") { // Only close if clicked outside the image
+            zoomContainer.style.display = "none";
+        }
     }
 
-    // Add mouse wheel zoom-in and zoom-out functionality
-    const zoomedImage = document.getElementById("zoomedImage");
-    zoomContainer.addEventListener("wheel", (e) => {
+    // Zoom in/out using the mouse wheel
+    function zoomImage(e) {
         e.preventDefault();
-        const scale = parseFloat(zoomedImage.style.transform.replace("scale(", "").replace(")", "")) || 1;
-        const delta = e.deltaY < 0 ? 0.1 : -0.1; // Zoom in or out
-        const newScale = Math.max(0.5, Math.min(3, scale + delta)); // Limit zoom scale between 0.5x and 3x
-        zoomedImage.style.transform = `scale(${newScale})`;
-    });
+        const zoomedImage = document.getElementById("zoomedImage");
+
+        // Calculate new zoom level
+        const zoomStep = e.deltaY < 0 ? 0.1 : -0.1; // Zoom in or out
+        currentZoom = Math.max(1, Math.min(3, currentZoom + zoomStep)); // Clamp zoom level between 1x and 3x
+
+        // Update the image transform
+        zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
+    }
+
+    // Start dragging the image
+    function startDragging(e) {
+        isZooming = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        zoomContainer.style.cursor = "grabbing"; // Change cursor to grabbing
+    }
+
+    // Drag the image
+    function dragImage(e) {
+        if (!isZooming || currentZoom <= 1) return; // Only allow dragging if zoomed in
+
+        const zoomedImage = document.getElementById("zoomedImage");
+        const dx = e.clientX - startX; // Calculate horizontal drag distance
+        const dy = e.clientY - startY; // Calculate vertical drag distance
+        offsetX += dx / currentZoom; // Adjust offsets based on zoom level
+        offsetY += dy / currentZoom;
+
+        // Update the image transform with new offsets
+        zoomedImage.style.transform = `scale(${currentZoom}) translate(${offsetX}px, ${offsetY}px)`;
+
+        // Update starting position
+        startX = e.clientX;
+        startY = e.clientY;
+    }
+
+    // Stop dragging the image
+    function stopDragging() {
+        isZooming = false;
+        zoomContainer.style.cursor = "grab"; // Change cursor back to grab
+    }
 </script>
+
 
 </body>
 </html>
