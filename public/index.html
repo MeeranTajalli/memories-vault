@@ -3,25 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Memories</title>
+    <title>Memory Vault</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Header with Navigation -->
     <header>
-        <h1>Public Memories</h1>
-        <p class="slogan">Explore memories shared by everyone!</p>
+        <h1>Memory Vault</h1>
+        <p class="slogan">A place where you treasure your valuable pictures and relive your memories.</p>
         <nav>
-            <a href="index.html" class="nav-link">Public Memories</a>
+            <a href="index.html" class="nav-link">Home</a>
             <a href="private.html" class="nav-link">Private Memories</a>
             <a href="about.html" class="nav-link">About Us</a>
+            <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
     </header>
 
-    <!-- View Public Memories -->
+    <!-- Upload Section -->
     <main>
+        <section id="upload-section">
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <h2>Upload Your Memories</h2>
+                <input type="file" name="image" required>
+                <label for="container">Choose a container:</label>
+                <select name="container" required>
+                    <option value="public">Public Memories</option>
+                    <option value="private">Private Memories</option>
+                </select>
+                <button type="submit">Upload Image</button>
+            </form>
+        </section>
+
+        <!-- View Section -->
         <section id="view-section">
-            <h2>Public Memories</h2>
+            <h2>View Memories</h2>
+            <label for="viewContainer">Choose a container to view:</label>
+            <select id="viewContainer">
+                <option value="public">Public Memories</option>
+                <option value="private">Private Memories</option>
+            </select>
+            <button id="viewImagesBtn">View Images</button>
             <div id="imageGallery"></div>
         </section>
     </main>
@@ -31,27 +52,45 @@
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
+    <!-- Script Section -->
     <script>
-        async function loadPublicMemories() {
-            // Fetch images from the public container
-            const response = await fetch(`/images?container=public`);
-            const images = await response.json();
+        // Check if the user is authenticated for private operations
+        const authenticated = sessionStorage.getItem("authenticated");
 
+        // Event listener for viewing images
+        document.getElementById("viewImagesBtn").addEventListener("click", function () {
+            const container = document.getElementById("viewContainer").value;
+            if (container === "private" && !authenticated) {
+                alert("You need to sign in to view private memories.");
+                window.location.href = "signin.html";
+            } else {
+                loadImages(container);
+            }
+        });
+
+        // Load public images by default
+        loadImages("public");
+
+        async function loadImages(container) {
+            const response = await fetch(`/images?container=${container}`);
+            const images = await response.json();
             const gallery = document.getElementById("imageGallery");
             gallery.innerHTML = "";
-
-            // Display images in the gallery
             images.forEach(imageUrl => {
                 const img = document.createElement("img");
                 img.src = imageUrl;
-                img.alt = "Public Memory";
+                img.alt = "Uploaded Memory";
                 img.classList.add("gallery-image");
                 gallery.appendChild(img);
             });
         }
 
-        // Load public memories on page load
-        loadPublicMemories();
+        // Sign-out functionality
+        document.getElementById("signout").addEventListener("click", function () {
+            sessionStorage.removeItem("authenticated");
+            alert("You have been signed out.");
+            window.location.href = "signin.html";
+        });
     </script>
 </body>
 </html>
