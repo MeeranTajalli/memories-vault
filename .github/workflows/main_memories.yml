@@ -62,7 +62,7 @@ jobs:
         run: ls -al
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip -d .
+        run: unzip -o release.zip -d .
 
       - name: Log in to Azure
         uses: azure/login@v1
