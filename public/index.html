@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memories App</title>
+    <title>Memory Vault</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Header -->
     <h1>Memory Vault</h1>
+
+    <!-- Upload Section -->
     <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <h2>Upload Your Memories</h2>
         <input type="file" name="image" required>
         <label for="container">Choose a container:</label>
         <select name="container" required>
@@ -17,7 +21,9 @@
         </select>
         <button type="submit">Upload Image</button>
     </form>
-    <h2>View Images</h2>
+
+    <!-- View Section -->
+    <h2>View Memories</h2>
     <label for="viewContainer">Choose a container to view:</label>
     <select id="viewContainer">
         <option value="public">Public Memories</option>
@@ -25,6 +31,11 @@
     </select>
     <button id="viewImagesBtn">View Images</button>
     <div id="imageGallery"></div>
+
+    <!-- Footer -->
+    <footer>
+        © 2024 Memory Vault - All Rights Reserved
+    </footer>
 
     <script>
         async function loadImages(container) {
@@ -37,7 +48,7 @@
             images.forEach(imageUrl => {
                 const img = document.createElement("img");
                 img.src = imageUrl;
-                img.alt = "Uploaded Image";
+                img.alt = "Uploaded Memory";
                 gallery.appendChild(img);
             });
         }
