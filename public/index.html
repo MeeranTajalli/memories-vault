@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Header -->
     <h1>Memory Vault</h1>
 
     <!-- Upload Section -->
@@ -32,24 +31,7 @@
     <button id="viewImagesBtn">View Images</button>
     <div id="imageGallery"></div>
 
-    <!-- Lightbox Container -->
-    <div id="lightbox" class="lightbox">
-        <span class="close">&times;</span>
-        <img class="lightbox-content" id="lightboxImage" alt="Full Image">
-        <div class="controls">
-            <button id="zoomInBtn">Zoom In</button>
-            <button id="zoomOutBtn">Zoom Out</button>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        © 2024 Memory Vault - All Rights Reserved
-    </footer>
-
     <script>
-        let currentZoom = 1;
-
         async function loadImages(container) {
             const response = await fetch(`/images?container=${container}`);
             const images = await response.json();
@@ -62,50 +44,62 @@
                 img.src = imageUrl;
                 img.alt = "Uploaded Memory";
                 img.classList.add("gallery-image");
-                img.addEventListener("click", () => openLightbox(imageUrl)); // Add click event to open lightbox
                 gallery.appendChild(img);
             });
         }
 
-        function openLightbox(imageUrl) {
-            const lightbox = document.getElementById("lightbox");
-            const lightboxImage = document.getElementById("lightboxImage");
-
-            lightbox.style.display = "block";
-            lightboxImage.src = imageUrl;
-            currentZoom = 1; // Reset zoom level
-            lightboxImage.style.transform = `scale(${currentZoom})`;
-        }
-
-        function closeLightbox() {
-            const lightbox = document.getElementById("lightbox");
-            lightbox.style.display = "none";
-        }
-
-        function zoomIn() {
-            currentZoom += 0.2;
-            document.getElementById("lightboxImage").style.transform = `scale(${currentZoom})`;
-        }
-
-        function zoomOut() {
-            if (currentZoom > 0.4) {
-                currentZoom -= 0.2;
-                document.getElementById("lightboxImage").style.transform = `scale(${currentZoom})`;
-            }
-        }
-
-        // Event Listeners
         document.getElementById("viewImagesBtn").addEventListener("click", function () {
             const container = document.getElementById("viewContainer").value;
             loadImages(container);
         });
 
-        document.querySelector(".close").addEventListener("click", closeLightbox);
-        document.getElementById("zoomInBtn").addEventListener("click", zoomIn);
-        document.getElementById("zoomOutBtn").addEventListener("click", zoomOut);
-
         // Load public images by default on page load
         loadImages("public");
     </script>
+    <script>
+    let zoomContainer;
+
+    // Add event listener to images for zoom functionality
+    document.addEventListener("DOMContentLoaded", () => {
+        zoomContainer = document.createElement("div");
+        zoomContainer.className = "zoom-container";
+        zoomContainer.innerHTML = `<img id="zoomedImage" src="">`;
+        document.body.appendChild(zoomContainer);
+
+        const gallery = document.getElementById("imageGallery");
+
+        gallery.addEventListener("click", (e) => {
+            if (e.target && e.target.classList.contains("gallery-image")) {
+                openZoom(e.target.src);
+            }
+        });
+
+        zoomContainer.addEventListener("click", closeZoom);
+    });
+
+    // Open zoom container
+    function openZoom(imageSrc) {
+        const zoomedImage = document.getElementById("zoomedImage");
+        zoomedImage.src = imageSrc;
+        zoomedImage.style.transform = "scale(1)";
+        zoomContainer.style.display = "flex";
+    }
+
+    // Close zoom container
+    function closeZoom() {
+        zoomContainer.style.display = "none";
+    }
+
+    // Add mouse wheel zoom-in and zoom-out functionality
+    const zoomedImage = document.getElementById("zoomedImage");
+    zoomContainer.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const scale = parseFloat(zoomedImage.style.transform.replace("scale(", "").replace(")", "")) || 1;
+        const delta = e.deltaY < 0 ? 0.1 : -0.1; // Zoom in or out
+        const newScale = Math.max(0.5, Math.min(3, scale + delta)); // Limit zoom scale between 0.5x and 3x
+        zoomedImage.style.transform = `scale(${newScale})`;
+    });
+</script>
+
 </body>
 </html>
