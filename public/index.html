@@ -32,12 +32,24 @@
     <button id="viewImagesBtn">View Images</button>
     <div id="imageGallery"></div>
 
+    <!-- Lightbox Container -->
+    <div id="lightbox" class="lightbox">
+        <span class="close">&times;</span>
+        <img class="lightbox-content" id="lightboxImage" alt="Full Image">
+        <div class="controls">
+            <button id="zoomInBtn">Zoom In</button>
+            <button id="zoomOutBtn">Zoom Out</button>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         © 2024 Memory Vault - All Rights Reserved
     </footer>
 
     <script>
+        let currentZoom = 1;
+
         async function loadImages(container) {
             const response = await fetch(`/images?container=${container}`);
             const images = await response.json();
@@ -49,14 +61,48 @@
                 const img = document.createElement("img");
                 img.src = imageUrl;
                 img.alt = "Uploaded Memory";
+                img.classList.add("gallery-image");
+                img.addEventListener("click", () => openLightbox(imageUrl)); // Add click event to open lightbox
                 gallery.appendChild(img);
             });
         }
 
+        function openLightbox(imageUrl) {
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImage = document.getElementById("lightboxImage");
+
+            lightbox.style.display = "block";
+            lightboxImage.src = imageUrl;
+            currentZoom = 1; // Reset zoom level
+            lightboxImage.style.transform = `scale(${currentZoom})`;
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById("lightbox");
+            lightbox.style.display = "none";
+        }
+
+        function zoomIn() {
+            currentZoom += 0.2;
+            document.getElementById("lightboxImage").style.transform = `scale(${currentZoom})`;
+        }
+
+        function zoomOut() {
+            if (currentZoom > 0.4) {
+                currentZoom -= 0.2;
+                document.getElementById("lightboxImage").style.transform = `scale(${currentZoom})`;
+            }
+        }
+
+        // Event Listeners
         document.getElementById("viewImagesBtn").addEventListener("click", function () {
             const container = document.getElementById("viewContainer").value;
             loadImages(container);
         });
+
+        document.querySelector(".close").addEventListener("click", closeLightbox);
+        document.getElementById("zoomInBtn").addEventListener("click", zoomIn);
+        document.getElementById("zoomOutBtn").addEventListener("click", zoomOut);
 
         // Load public images by default on page load
         loadImages("public");
