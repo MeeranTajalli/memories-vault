@@ -13,36 +13,16 @@
         <p class="slogan">A place where you treasure your valuable pictures and relive your memories.</p>
         <nav>
             <a href="index.html" class="nav-link">Home</a>
-            <a href="private.html" class="nav-link">Private Memories</a>
+            <a href="private.html" class="nav-link" id="privateLink">Private Memories</a>
             <a href="about.html" class="nav-link">About Us</a>
-            <a href="#" id="signout" class="nav-link">Sign Out</a>
+            <a href="#" id="signout" class="nav-link" style="display: none;">Sign Out</a>
         </nav>
     </header>
 
-    <!-- Upload Section -->
+    <!-- Main Content -->
     <main>
-        <section id="upload-section">
-            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-                <h2>Upload Your Memories</h2>
-                <input type="file" name="image" required>
-                <label for="container">Choose a container:</label>
-                <select name="container" required>
-                    <option value="public">Public Memories</option>
-                    <option value="private">Private Memories</option>
-                </select>
-                <button type="submit">Upload Image</button>
-            </form>
-        </section>
-
-        <!-- View Section -->
-        <section id="view-section">
-            <h2>View Memories</h2>
-            <label for="viewContainer">Choose a container to view:</label>
-            <select id="viewContainer">
-                <option value="public">Public Memories</option>
-                <option value="private">Private Memories</option>
-            </select>
-            <button id="viewImagesBtn">View Images</button>
+        <section id="public-section">
+            <h2>Public Memories</h2>
             <div id="imageGallery"></div>
         </section>
     </main>
@@ -52,19 +32,19 @@
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
-    <!-- Script Section -->
     <script>
-        // Check if the user is authenticated for private operations
+        // Check authentication for private page navigation
         const authenticated = sessionStorage.getItem("authenticated");
 
-        // Event listener for viewing images
-        document.getElementById("viewImagesBtn").addEventListener("click", function () {
-            const container = document.getElementById("viewContainer").value;
-            if (container === "private" && !authenticated) {
-                alert("You need to sign in to view private memories.");
-                window.location.href = "signin.html";
-            } else {
-                loadImages(container);
+        document.getElementById("privateLink").addEventListener("click", function (e) {
+            if (!authenticated) {
+                e.preventDefault(); // Prevent navigation
+                const signIn = confirm("You need to sign in to view private memories. Would you like to sign in?");
+                if (signIn) {
+                    window.location.href = "signin.html";
+                } else {
+                    alert("Redirecting to the home page.");
+                }
             }
         });
 
@@ -79,17 +59,21 @@
             images.forEach(imageUrl => {
                 const img = document.createElement("img");
                 img.src = imageUrl;
-                img.alt = "Uploaded Memory";
+                img.alt = "Public Memory";
                 img.classList.add("gallery-image");
                 gallery.appendChild(img);
             });
         }
 
         // Sign-out functionality
+        if (authenticated) {
+            document.getElementById("signout").style.display = "block";
+        }
+
         document.getElementById("signout").addEventListener("click", function () {
             sessionStorage.removeItem("authenticated");
             alert("You have been signed out.");
-            window.location.href = "signin.html";
+            window.location.href = "index.html";
         });
     </script>
 </body>
