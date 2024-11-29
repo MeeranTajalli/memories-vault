@@ -13,29 +13,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the code from the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Set up the Node.js environment
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # Step 4: Build the application (if applicable)
       - name: Build the application (if applicable)
         run: npm run build --if-present
 
+      # Step 5: Run tests (if applicable)
       - name: Test the application (if applicable)
         run: npm run test --if-present
 
+      # Step 6: Create a ZIP artifact for deployment
       - name: Zip artifact for deployment
         run: zip -r release.zip ./*
 
+      # Step 7: Debugging - List files in the build directory
       - name: List files in build directory (debugging)
         run: ls -al
 
+      # Step 8: Upload the artifact for deployment
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
@@ -50,29 +58,30 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      # Step 1: Check out the code again (best practice)
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Download the artifact from the build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
+      # Step 3: Debugging - List files in the deploy directory
       - name: List files in deploy directory (debugging)
         run: ls -al
 
+      # Step 4: Unzip the artifact for deployment
       - name: Unzip artifact for deployment
         run: unzip -o release.zip -d .
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+      # Step 5: Deploy to Azure Web App using Publish Profile
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'memories'
+          app-name: 'memories'  # Replace with your Azure Web App name
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
