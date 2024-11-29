@@ -12,16 +12,13 @@
         <h1>Private Memories</h1>
         <nav>
             <a href="index.html" class="nav-link">Home</a>
-            <a href="private.html" class="nav-link">Confidential</a>
             <a href="about.html" class="nav-link">About Us</a>
-            <a href="#" id="signout" class="nav-link">Sign Out</a>
         </nav>
     </header>
 
     <!-- Main Content -->
     <main>
         <h2>Your Private Memories</h2>
-        <p>View all the memories you've kept private and secure.</p>
         <div id="privateImageGallery"></div>
     </main>
 
@@ -30,25 +27,22 @@
         <p>© 2024 Memory Vault - All Rights Reserved</p>
     </footer>
 
-    <!-- Script Section -->
     <script>
-        // Check if the user is authenticated
+        // Check authentication
         const authenticated = sessionStorage.getItem("authenticated");
         if (!authenticated) {
-            alert("You need to sign in to access this page.");
-            window.location.href = "signin.html";
+            const signIn = confirm("You need to sign in to access private memories. Would you like to sign in?");
+            if (signIn) {
+                window.location.href = "signin.html";
+            } else {
+                alert("Redirecting to the home page.");
+                window.location.href = "index.html";
+            }
         } else {
             fetchPrivatePhotos();
         }
 
-        // Sign-out functionality
-        document.getElementById("signout").addEventListener("click", function () {
-            sessionStorage.removeItem("authenticated");
-            alert("You have been signed out.");
-            window.location.href = "signin.html";
-        });
-
-        // Fetch private photos from Azure Blob Storage
+        // Function to fetch private photos from Azure Blob Storage
         function fetchPrivatePhotos() {
             const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories";
             const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D";
