@@ -47,14 +47,14 @@
 
         // Function to fetch private photos from Azure Blob Storage
         function fetchPrivatePhotos() {
-            // Replace with your Azure Blob Storage details
-            const containerUrl = "https://<your-storage-account>.blob.core.windows.net/<your-container-name>";
-            const sasToken = "<your-SAS-token>"; // Add your SAS token here
+            // Azure Blob Storage details
+            const containerUrl = "https://cloudtask5.blob.core.windows.net/private-memories"; // Container URL provided
+            const sasToken = "sp=racl&st=2024-11-29T20:50:00Z&se=2024-12-07T04:50:00Z&sv=2022-11-02&sr=c&sig=kIa8ZhpwDGH%2FFJxyftLhUkh7%2B14E%2F342v8BAZaD9k6w%3D"; // SAS token provided
 
-            fetch(`${containerUrl}?restype=container&comp=list&${sasToken}`)
+            fetch(${containerUrl}?restype=container&comp=list&${sasToken})
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+                        throw new Error(HTTP error! Status: ${response.status});
                     }
                     return response.text();
                 })
@@ -72,7 +72,7 @@
 
                     for (let i = 0; i < blobs.length; i++) {
                         const blobName = blobs[i].getElementsByTagName("Name")[0].textContent;
-                        const blobUrl = `${containerUrl}/${blobName}?${sasToken}`;
+                        const blobUrl = ${containerUrl}/${blobName}?${sasToken};
 
                         const img = document.createElement("img");
                         img.src = blobUrl;
