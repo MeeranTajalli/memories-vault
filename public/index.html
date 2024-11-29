@@ -8,47 +8,107 @@
 </head>
 <body>
     <h1>Memories App</h1>
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" required>
-        <label for="container">Choose a container:</label>
-        <select name="container" required>
-            <option value="public">Public Memories</option>
-            <option value="private">Private Memories</option>
-        </select>
-        <button type="submit">Upload Image</button>
-    </form>
-    <h2>View Images</h2>
-    <label for="viewContainer">Choose a container to view:</label>
-    <select id="viewContainer">
-        <option value="public">Public Memories</option>
-        <option value="private">Private Memories</option>
-    </select>
-    <button id="viewImagesBtn">View Images</button>
-    <div id="imageGallery"></div>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+        <h2>Login</h2>
+        <form id="login">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="loginError" style="color: red;"></p>
+    </div>
+
+    <!-- Upload Form -->
+    <div id="uploadForm" style="display: none;">
+        <h2>Upload Image</h2>
+        <form id="upload" enctype="multipart/form-data">
+            <input type="file" id="image" name="image" required>
+            <button type="submit">Upload Image</button>
+        </form>
+    </div>
+
+    <!-- Private Images Section -->
+    <div id="privateImagesSection" style="display: none;">
+        <h2>Your Private Images</h2>
+        <button id="logout">Logout</button>
+        <div id="privateImageGallery"></div>
+    </div>
 
     <script>
-        async function loadImages(container) {
-            const response = await fetch(`/images?container=${container}`);
-            const images = await response.json();
+        const loginForm = document.getElementById("login");
+        const uploadForm = document.getElementById("upload");
+        const loginFormContainer = document.getElementById("loginForm");
+        const uploadFormContainer = document.getElementById("uploadForm");
+        const privateImagesSection = document.getElementById("privateImagesSection");
+        const privateImageGallery = document.getElementById("privateImageGallery");
+        const loginError = document.getElementById("loginError");
 
-            const gallery = document.getElementById("imageGallery");
-            gallery.innerHTML = "";
+        // Handle login
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
 
-            images.forEach(imageUrl => {
-                const img = document.createElement("img");
-                img.src = imageUrl;
-                img.alt = "Uploaded Image";
-                gallery.appendChild(img);
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
             });
-        }
 
-        document.getElementById("viewImagesBtn").addEventListener("click", function () {
-            const container = document.getElementById("viewContainer").value;
-            loadImages(container);
+            if (response.ok) {
+                loginFormContainer.style.display = "none";
+                uploadFormContainer.style.display = "block";
+                privateImagesSection.style.display = "block";
+                loadPrivateImages();
+            } else {
+                const result = await response.json();
+                loginError.textContent = result.message || "Login failed.";
+            }
         });
 
-        // Load public images by default on page load
-        loadImages("public");
+        // Handle logout
+        document.getElementById("logout").addEventListener("click", async () => {
+            await fetch("/logout", { method: "POST" });
+            uploadFormContainer.style.display = "none";
+            privateImagesSection.style.display = "none";
+            loginFormContainer.style.display = "block";
+        });
+
+        // Handle image upload
+        uploadForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            const response = await fetch("/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("Image uploaded successfully!");
+                loadPrivateImages();
+            } else {
+                alert("Failed to upload image.");
+            }
+        });
+
+        // Load private images
+        async function loadPrivateImages() {
+            const response = await fetch("/private-images");
+            const images = await response.json();
+
+            privateImageGallery.innerHTML = "";
+            images.forEach((url) => {
+                const img = document.createElement("img");
+                img.src = url;
+                img.alt = "Private Memory";
+                img.style.width = "200px";
+                img.style.margin = "10px";
+                privateImageGallery.appendChild(img);
+            });
+        }
     </script>
 </body>
 </html>
